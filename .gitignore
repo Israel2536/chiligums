@@ -12,6 +12,9 @@ dist
 dist-ssr
 *.local
 
+# Archivos locales que no deben ir al repo
+deploy.bat
+*.json
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
