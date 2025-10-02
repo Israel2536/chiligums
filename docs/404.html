@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ChiliGums</title>
+    <link href="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css" rel="stylesheet">
+
+    <!-- Fuente Fredoka -->
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap" rel="stylesheet">
+
+    <!-- Nuestros estilos -->
+    <link
+            rel="stylesheet"
+            href="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-directions/v4.1.1/mapbox-gl-directions.css"
+    />
+  <script type="module" crossorigin src="/chiligums/assets/index-4HP0WJsN.js"></script>
+  <link rel="stylesheet" crossorigin href="/chiligums/assets/index-Dr--WGRh.css">
+</head>
+
+<!-- Hero -->
+<header class="hero">
+    <img src="/chiligums/logo.png" alt="ChiliGums Logo" class="hero-logo" />
+    <p class="slogan">¡Lo dulce y picante que te conquistará!</p>
+</header>
+<body class="body">
+<!-- Contenido -->
+<main class="map-section">
+    <div class="map-container">
+        <section class="toggle-section">
+            <div class="toggle">
+                <button id="pickupBtn" class="toggle-btn active">Puntos de venta</button>
+                <button id="deliveryBtn" class="toggle-btn">Delivery</button>
+            </div>
+        </section>
+        <div id="map"></div>
+        <div id="mapLoader">
+            <div class="spinner"></div>
+        </div>
+
+    </div>
+</main>
+
+<!-- Template para PICKUP -->
+<section id="pickupTemplate" style="display:none;">
+    <div class="popup-card" data-lat="" data-lng="">
+        <button class="popup-close">✖</button>
+        <h4 class="popup-title">NOMBRE</h4>
+        <p class="popup-desc">DIRECCIÓN</p>
+        <button class="popup-btn">🚗 Ir con Google Maps</button>
+    </div>
+</section>
+
+<!-- Template para DELIVERY -->
+<section id="deliveryTemplate" style="display:none;">
+    <div class="popup-card" data-lat="" data-lng="">
+        <button class="popup-close">✖</button>
+        <h4 class="popup-title">Tu ubicación</h4>
+        <p class="popup-desc">Haz clic en el botón para pedir por WhatsApp</p>
+        <button class="popup-btn">📲 Pedir por WhatsApp</button>
+    </div>
+</section>
+<div id="mapLoader" class="map-loader">
+    <div class="spinner"></div>
+</div>
+
+
+<!-- Botón flotante de WhatsApp -->
+<a href="https://wa.me/593999999999" target="_blank" class="whatsapp-btn">
+    💬 WhatsApp
+</a>
+<!-- Mapbox JS -->
+<script src="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js"></script>
+
+<!-- Tu JS -->
+
+</body>
+</html>
+<script src="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-directions/v4.1.1/mapbox-gl-directions.js"></script>
