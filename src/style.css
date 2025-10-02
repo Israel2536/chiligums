@@ -1,0 +1,261 @@
+/* Reset para quitar márgenes y evitar scroll horizontal */
+html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    overflow-x: hidden;
+    background-color: #1C2B33;
+}
+
+
+/* ===== HERO ===== */
+.hero {
+    /* Degradado base (rojo → vino → naranja) */
+    background:
+            url('/public/chile-icon.png') repeat, /* patrón chile */ #3b7283;
+
+    /* Mosaico de chiles */
+    background-size: 40px 40px, cover; /* más pequeño y repetido */
+    background-position: center;
+    background-blend-mode: soft-light; /* suaviza la mezcla */
+
+    text-align: center;
+    padding: 60px 20px;
+    color: #fff;
+    position: relative;
+    clip-path: polygon(0 0, 100% 0, 100% 90%, 0 100%);
+}
+
+/* Textura sutil de puntos */
+.hero::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image: radial-gradient(rgba(255, 255, 255, 0.08) 1px, transparent 1px);
+    background-size: 24px 24px;
+    z-index: 0;
+}
+
+@keyframes gradientShift {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+.hero-logo {
+    max-width: 180px;
+    height: auto;
+    filter: drop-shadow(0px 4px 10px rgba(0,0,0,0.4));
+    position: relative;
+    z-index: 1;
+}
+
+.slogan {
+    margin-top: 10px;
+    font-family: 'Fredoka', sans-serif;
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #f77f00; /* mostaza/naranja de la paleta */
+    text-shadow: 0 2px 6px rgba(0,0,0,0.3);
+    position: relative;
+    z-index: 1;
+}
+.body{
+    background-color: #1C2B33;
+}
+
+/* ===== MAP SECTION ===== */
+.map-section {
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+    background: #1C2B33;
+}
+
+.map-container {
+    width: 100%;
+    max-width: 1000px;
+    height: 500px;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    position: relative; /* Necesario para posicionar el toggle dentro */
+}
+
+#map {
+    width: 100%;
+    max-width: 1000px;
+    height: 500px;
+    border-radius: 16px;
+    overflow: hidden;
+
+    /* halo de luz */
+    background: #0d1b24; /* tu color base oscuro */
+    box-shadow: 0 0 25px rgba(255, 255, 255, 0.25); /* brillo suave alrededor */
+}
+/* ===== TOGGLE ===== */
+.toggle-section {
+    position: absolute;
+    top: 15px;       /* un poco abajo dentro del mapa */
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10;
+}
+
+.toggle {
+    display: inline-flex;
+    background: #fff;
+    border-radius: 20px;
+    border: 1px solid #ddd;
+    overflow: hidden;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+}
+
+.toggle-btn {
+    padding: 6px 16px; /* default */
+    border: none;
+    outline: none;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 500;
+    font-family: 'Poppins', sans-serif;
+    color: #333;
+    background: transparent;
+    transition: background 0.3s, color 0.3s;
+}
+
+.toggle-btn.active {
+    background: #f77f00; /* Mostaza/naranja */
+    color: #fff;
+}
+
+/* 📱 Ajustes en pantallas pequeñas */
+@media (max-width: 600px) {
+    .toggle-btn {
+        padding: 5px 12px;
+        font-size: 0.8rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .toggle {
+        border-radius: 14px; /* más compacto */
+    }
+
+    .toggle-btn {
+        padding: 4px 10px;
+        font-size: 0.75rem;
+    }
+}
+
+/* ===== WHATSAPP BUTTON ===== */
+.whatsapp-btn {
+    position: fixed;
+    right: 20px;
+    bottom: 20px;
+    background: #25d366;
+    color: white;
+    font-weight: bold;
+    text-decoration: none;
+    padding: 12px 18px;
+    border-radius: 30px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    transition: transform 0.2s ease;
+    z-index: 10;
+}
+
+.whatsapp-btn:hover {
+    transform: scale(1.05);
+}
+
+.mapboxgl-ctrl button {
+    font-size: 16px;
+    line-height: 1;
+}
+#customPopup {
+    pointer-events: auto; /* permite hacer clic en botones */
+    z-index: 999;
+}
+
+.popup-card {
+    min-width: 240px;
+    background: #fff;
+    border-radius: 16px;
+    padding: 12px;
+    font-family: 'Poppins', sans-serif;
+    box-shadow: 0 6px 14px rgba(0,0,0,0.25);
+    text-align: center;
+}
+
+.popup-title {
+    margin: 6px 0 8px;
+    font-weight: 700;
+    font-size: 16px;
+    color: #ef4444;
+}
+
+.popup-desc {
+    margin: 0 0 12px;
+    font-size: 13px;
+    color: #555;
+    line-height: 1.4;
+}
+
+.popup-btn {
+    display: block;
+    width: 100%;
+    padding: 8px 10px;
+    border-radius: 12px;
+    border: 0;
+    background: linear-gradient(90deg, #f97316, #ef4444);
+    color: #fff;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    transition: transform .2s, box-shadow .2s;
+}
+
+.popup-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 5px 10px rgba(0,0,0,0.25);
+}
+.popup-close {
+    position: absolute;
+    top: 6px;
+    right: 8px;
+    border: none;
+    background: transparent;
+    font-size: 16px;
+    cursor: pointer;
+    color: #666;
+}
+/* Overlay del mapa */
+#mapLoader {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(240, 240, 240, 0.6); /* peliculita ploma */
+    backdrop-filter: blur(3px); /* blur */
+    display: none; /* oculto por defecto */
+    z-index: 1500;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Spinner circular */
+#mapLoader .spinner {
+    width: 50px;
+    height: 50px;
+    border: 5px solid rgba(255, 255, 255, 0.6);
+    border-top: 5px solid #ef4444; /* rojo */
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
