@@ -1,6 +1,152 @@
 import { initializeApp } from "firebase/app";
 import { getFirestore, collection, getDocs } from "firebase/firestore";
 
+(function(){
+    const SPLASH = document.getElementById('simpleSplash');
+    if (!SPLASH) return;
+
+    // ms (coincidir con CSS vars)
+    const VISIBLE_MS = 1000; // 1s visible
+    const FADE_MS = 500;     // 500ms fade-out (suavizado)
+    let hideTimer = null;
+
+    // Mostrar (por si lo llamas desde JS)
+    function show() {
+        SPLASH.classList.remove('hidden');
+        SPLASH.style.pointerEvents = 'all';
+        // for accessibility
+        const logo = SPLASH.querySelector('img');
+        if (logo) logo.setAttribute('aria-hidden', 'false');
+    }
+
+    // Ocultar con suavizado y remover del DOM después del fade
+    function hide() {
+        // aplicar clase que inicia la transición
+        // usamos requestAnimationFrame para asegurarnos que el browser reconozca el cambio
+        requestAnimationFrame(() => {
+            SPLASH.classList.add('hidden');
+            SPLASH.style.pointerEvents = 'none';
+        });
+        // remover del DOM después del tiempo de fade
+        setTimeout(() => {
+            if (SPLASH && SPLASH.parentNode) SPLASH.parentNode.removeChild(SPLASH);
+        }, FADE_MS + 40);
+    }
+
+    // iniciar: mostrar y programar hide
+    show();
+    hideTimer = setTimeout(hide, VISIBLE_MS);
+
+    // expose helper to skip during dev
+    window.__skipSplash = function(){
+        clearTimeout(hideTimer);
+        hide();
+    };
+
+    // soporte reduced motion: si prefieren reducir movimiento, acortar todo
+    const mq = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)');
+    if (mq && mq.matches) {
+        clearTimeout(hideTimer);
+        // hide rápido
+        hideTimer = setTimeout(hide, Math.min(600, VISIBLE_MS));
+    }
+})();
+
+// KEY para localStorage
+const INTRO_STORAGE_KEY = "chiligums_seen_intro_v1";
+
+/**
+ * Crea y muestra el modal introductorio (si no está desactivado).
+ * Opciones:
+ *  - force: true -> ignora localStorage y muestra
+ *  - message: texto adicional (opcional)
+ */
+function showIntroModal({ force = false, message = null } = {}) {
+    try {
+        if (!force && localStorage.getItem(INTRO_STORAGE_KEY) === "true") return;
+    } catch (e) {
+        // si localStorage falla seguimos mostrando
+        console.warn("localStorage not available:", e);
+    }
+
+    // Si ya existe, no lo recreamos
+    if (document.querySelector(".intro-modal")) {
+        return;
+    }
+
+    // Crear DOM del modal
+    const backdrop = document.createElement("div");
+    backdrop.className = "intro-modal";
+    backdrop.setAttribute("role", "dialog");
+    backdrop.setAttribute("aria-modal", "true");
+    backdrop.innerHTML = `
+    <div class="intro-modal__card" role="document">
+      <button class="intro-close" aria-label="Cerrar">×</button>
+      <h2>Cómo usar los puntos</h2>
+      <p>${escapeHtml(message || "Pulsa en cualquier pin del mapa para ver la información del punto de venta.")}</p>
+      <div class="intro-actions">
+        <button class="intro-ok">Entendido</button>
+      </div>
+    </div>`;
+
+    document.body.appendChild(backdrop);
+
+    // Enfocar en el botón OK
+    const okBtn = backdrop.querySelector(".intro-ok");
+    const closeBtn = backdrop.querySelector(".intro-close");
+    const skipCheckbox = backdrop.querySelector(".intro-skip-checkbox");
+
+    okBtn.focus();
+
+    function closeModal() {
+        if (!backdrop) return;
+        document.body.removeChild(backdrop);
+        document.removeEventListener("keydown", onKeyDown);
+    }
+
+    function onKeyDown(e) {
+        if (e.key === "Escape") closeModal();
+    }
+
+    // Eventos
+    okBtn.addEventListener("click", () => {
+        // si marcó "No mostrar de nuevo" guardamos
+        if (skipCheckbox && skipCheckbox.checked) {
+            try {
+                localStorage.setItem(INTRO_STORAGE_KEY, "true");
+            } catch (e) { console.warn("localStorage fail", e); }
+        }
+        closeModal();
+    });
+
+    closeBtn.addEventListener("click", () => {
+        closeModal();
+    });
+
+    // Cerrar si hace click fuera de la tarjeta
+    backdrop.addEventListener("click", (ev) => {
+        if (ev.target === backdrop) closeModal();
+    });
+
+    document.addEventListener("keydown", onKeyDown);
+}
+
+// escape simple para insertar en innerHTML
+function escapeHtml(str) {
+    return String(str || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
+// Llamada de utilidad: muestra la intro si no se ocultó
+function showIntroIfNeeded() {
+    showIntroModal({ force: false });
+}
+
+
 // ================= Firebase =================
 const firebaseConfig = {
     apiKey: "AIzaSyBtnkqK0cq137PH_mJdaBeK55MPSHAXQ34",
@@ -243,6 +389,7 @@ function activarDelivery() {
 // ================== MAPA ==================
 map.on("load", () => {
     cargarPuntos(); // modo pickup por defecto
+    showIntroIfNeeded();
 });
 
 map.on("move", () => {
@@ -282,4 +429,5 @@ if (pickupBtn && deliveryBtn) {
         showLoader();
         activarDelivery().finally(() => hideLoader());
     });
+
 }

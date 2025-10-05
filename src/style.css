@@ -259,3 +259,187 @@ html, body {
         transform: rotate(360deg);
     }
 }
+
+
+:root{
+    --powered-bg: #0f1720; /* fondo oscuro */
+    --powered-ink: #f8fafc; /* texto claro */
+    --accent: #d97706;      /* color acento (ajusta a tu paleta) */
+    --footer-height: auto;
+}
+
+#site-footer.powered{
+    background: var(--powered-bg);
+    color: var(--powered-ink);
+    padding: 18px 20px;
+    display: flex;
+    justify-content: center;
+    border-top: 1px solid rgba(255,255,255,0.04);
+    box-shadow: 0 -6px 20px rgba(2,6,23,0.5);
+    font-family: Inter, system-ui, -apple-system, "Helvetica Neue", Arial;
+    font-size: 14px;
+}
+
+.powered__inner{
+    max-width: 1100px;
+    width: 100%;
+    display:flex;
+    gap:12px;
+    align-items:center;
+}
+
+.powered__logo img{
+    width:48px;
+    height:48px;
+    object-fit:contain;
+    display:block;
+    filter: drop-shadow(0 2px 6px rgba(0,0,0,0.4));
+    border-radius:8px;
+}
+
+.powered__text{
+    display:flex;
+    flex-direction:column;
+    line-height:1;
+}
+
+.powered__by{
+    font-size:12px;
+    color:rgba(248,250,252,0.6);
+}
+
+.powered__name{
+    font-weight:700;
+    font-size:16px;
+    color:var(--powered-ink);
+}
+
+.powered__copyright{
+    font-size:12px;
+    color:rgba(248,250,252,0.5);
+    margin-top:6px;
+}
+
+/* responsive */
+@media (max-width:640px){
+    .powered__inner{ gap:10px; align-items:center; }
+    .powered__logo img{ width:40px; height:40px; }
+    .powered__name{ font-size:14px; }
+}
+/* Intro modal / tutorial */
+.intro-modal {
+    position: fixed;
+    left: 0; top: 0; right: 0; bottom: 0;
+    display: flex;
+    align-items: flex-end; /* aparece desde abajo, parecido a mobile sheet */
+    justify-content: center;
+    background: rgba(2,6,23,0.5);
+    z-index: 100001; /* por encima del mapa y del footer */
+    padding: 20px;
+}
+
+.intro-modal__card {
+    width: min(520px, 96%);
+    background: #0f1720;
+    color: #fff;
+    border-radius: 12px 12px 8px 8px;
+    padding: 18px;
+    box-shadow: 0 8px 30px rgba(2,6,23,0.6);
+    font-family: Inter, system-ui, -apple-system, sans-serif;
+    transform: translateY(0);
+}
+
+.intro-modal__card h2 {
+    margin: 0 0 8px;
+    font-size: 18px;
+    color: #fff;
+}
+
+.intro-modal__card p {
+    margin: 0 0 12px;
+    color: rgba(255,255,255,0.85);
+    font-size: 14px;
+}
+
+.intro-close {
+    position: absolute;
+    right: 18px;
+    top: 12px;
+    background: transparent;
+    border: none;
+    color: rgba(255,255,255,0.9);
+    font-size: 20px;
+    cursor: pointer;
+}
+
+.intro-actions {
+    display:flex;
+    align-items:center;
+    gap:12px;
+    justify-content:space-between;
+    margin-top:12px;
+}
+
+.intro-skip { color: rgba(255,255,255,0.8); font-size:13px; display:flex; align-items:center; gap:8px; }
+.intro-skip input { width:16px; height:16px; }
+
+.intro-ok {
+    background: linear-gradient(90deg,#d97706,#ffb74d);
+    color: #111;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-weight:700;
+    cursor:pointer;
+}
+@media (max-width:520px){
+    .intro-modal { align-items:flex-end; padding: 10px; }
+    .intro-modal__card { padding:14px; border-radius:10px; width:100%; }
+}
+:root{
+    --brand-blue: #0f3747;      /* tu azul */
+    --visible-ms: 1000ms;      /* tiempo visible (1s) */
+    --fade-ms: 500ms;          /* duración del fade (salida suave) */
+    --fade-ease: cubic-bezier(.2,.8,.2,1);
+}
+
+#simpleSplash{
+    position: fixed;
+    inset: 0;
+    background: var(--brand-blue);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 999999;
+    pointer-events: all;
+    transition: opacity var(--fade-ms) var(--fade-ease), visibility var(--fade-ms) var(--fade-ease);
+    opacity: 1;
+    visibility: visible;
+}
+
+#simpleSplash img {
+    width: min(220px, 36vw);
+    height: auto;
+    display:block;
+    transform: translateY(0) scale(1);
+    transition: transform var(--fade-ms) var(--fade-ease), opacity var(--fade-ms) var(--fade-ease);
+    will-change: transform, opacity;
+    filter: drop-shadow(0 8px 18px rgba(0,0,0,0.35));
+}
+
+/* Estado oculto: fade + pequeña traslación/escala del logo */
+#simpleSplash.hidden {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+}
+#simpleSplash.hidden img {
+    transform: translateY(8px) scale(0.96);
+    opacity: 0.85;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    #simpleSplash, #simpleSplash img {
+        transition: none !important;
+    }
+}
