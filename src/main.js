@@ -1,7 +1,7 @@
-// ================= Firebase =================
 import { initializeApp } from "firebase/app";
 import { getFirestore, collection, getDocs } from "firebase/firestore";
 
+// ================= Firebase =================
 const firebaseConfig = {
     apiKey: "AIzaSyBtnkqK0cq137PH_mJdaBeK55MPSHAXQ34",
     authDomain: "chiligums-map.firebaseapp.com",
@@ -37,7 +37,7 @@ function hideLoader() {
     document.getElementById("mapLoader").style.display = "none";
 }
 
-// ===== Reset view control (🎯) =====
+// ===== Botón Reset View (🎯) =====
 class ResetViewControl {
     onAdd(map) {
         this._map = map;
@@ -74,59 +74,11 @@ map.getContainer().appendChild(customPopup);
 let firestoreMarkers = [];
 let deliveryMarker = null;
 
-// ================= Helpers para platform / mapas =================
-
-// Detecta iOS (iPhone / iPad / iPod / iPadOS táctil en Mac)
-function isIOS() {
-    return /iPad|iPhone|iPod/.test(navigator.userAgent)
-        || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-}
-
-// --- NUEVO: usar esquema maps:// en iOS para abrir la app nativa ---
-// Devuelve la URL apropiada para direcciones:
-// - iOS: esquema maps:// para abrir App de Apple Maps (usa ubicación real del dispositivo como origen)
-// - Otros: Google Maps web con destination + travelmode
-function getDirectionsLink(lat, lng /* ambos como números o strings */) {
-    const coord = encodeURIComponent(`${lat},${lng}`);
-    if (isIOS()) {
-        // Abrir directamente la app nativa de Apple Maps. Evitamos pasar origen aquí.
-        // Ejemplo: maps://?daddr=LAT,LNG&dirflg=d (dirflg=d fuerza modo coche si se desea)
-        return `maps://?daddr=${coord}&dirflg=d`;
-    } else {
-        // Google Maps Web (funciona en Android / Desktop)
-        return `https://www.google.com/maps/dir/?api=1&destination=${coord}&travelmode=driving`;
-    }
-}
-
-// Añade el origen a la URL solo para Google (iOS: no añadimos origen, dejamos que la app use la ubicación actual)
-function addOriginToDirections(url, originLat, originLng) {
-    if (!url) return url;
-    if (isIOS()) {
-        // No añadimos origen para iOS (evitamos saddr/coords que rompen la ruta)
-        return url;
-    } else {
-        // Google Maps web: añadimos origin con coordenadas
-        const origin = encodeURIComponent(`${originLat},${originLng}`);
-        return `${url}&origin=${origin}`;
-    }
-}
-
-// Escapar texto simple para insertar en plantillas (básico)
-function escapeHtml(str) {
-    return String(str || '')
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#39;');
-}
-
 // ================== PICKUP ==================
 async function cargarPuntos() {
     const snap = await getDocs(collection(db, "puntos_venta"));
     snap.forEach((doc) => {
         const data = doc.data();
-        // destino como [lng, lat] para Mapbox
         const destino = [data.lng, data.lat];
 
         const marker = new mapboxgl.Marker({ color: "orange" })
@@ -136,8 +88,7 @@ async function cargarPuntos() {
         firestoreMarkers.push(marker);
 
         marker.getElement().addEventListener("click", async () => {
-            // URL inicial según plataforma (Apple app o Google web)
-            let url = getDirectionsLink(data.lat, data.lng);
+            let url = `https://www.google.com/maps/dir/?api=1&destination=${data.lat},${data.lng}`;
 
             // Clonar template de Pickup
             const template = document
@@ -149,18 +100,10 @@ async function cargarPuntos() {
             template.querySelector(".popup-desc").textContent =
                 data.direccion ?? "";
             template.querySelector(".popup-btn").textContent =
-                "🧭 Cómo llegar";
+                "🚗 Ir con Google Maps";
 
-            // botón: guardamos la URL en data-href y redirigimos internamente (misma pestaña)
-            const btn = template.querySelector(".popup-btn");
-            btn.dataset.href = url;
-
-            btn.addEventListener("click", (ev) => {
-                ev.preventDefault();
-                const href = btn.dataset.href || url;
-                console.log("Abriendo ruta (href):", href);
-                // Redirigir en la misma pestaña. En iOS abrirá la app de Apple Maps vía esquema maps://
-                window.location.href = href;
+            template.querySelector(".popup-btn").addEventListener("click", () => {
+                window.open(url, "_blank");
             });
 
             const closeBtn = template.querySelector(".popup-close");
@@ -173,34 +116,15 @@ async function cargarPuntos() {
             customPopup.innerHTML = "";
             customPopup.appendChild(template);
 
-            // posicionar customPopup sobre el marker
             const pixel = map.project(destino);
             customPopup.style.left = pixel.x + "px";
             customPopup.style.top = pixel.y + "px";
             customPopup.style.display = "block";
 
-            // Intentamos obtener la posición actual y actualizar la URL con el origen
-            // Solo agregamos origen para Google (en iOS NO lo añadimos)
             if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(
-                    (pos) => {
-                        const originLat = pos.coords.latitude;
-                        const originLng = pos.coords.longitude;
-                        const updated = addOriginToDirections(url, originLat, originLng);
-                        // Actualizamos el data-href del botón (para Google)
-                        btn.dataset.href = updated;
-                        console.log("URL actualizada con origen (si aplica):", updated);
-                    },
-                    (err) => {
-                        // si falla, no interrumpimos la experiencia (se queda la url base)
-                        console.warn("Geoloc error:", err);
-                    },
-                    {
-                        // opciones: intentamos con alta precisión por si acaso
-                        enableHighAccuracy: true,
-                        timeout: 5000
-                    }
-                );
+                navigator.geolocation.getCurrentPosition((pos) => {
+                    url += `&origin=${pos.coords.latitude},${pos.coords.longitude}`;
+                });
             }
         });
     });
@@ -221,15 +145,7 @@ function mostrarPopupDelivery(lat, lng) {
     const msg = encodeURIComponent(
         "Hola, quiero hacer un pedido desde esta ubicación:"
     );
-
-    // Para mensaje compartido por WhatsApp usamos URLs web (compatibles)
-    const mapsShare = isIOS()
-        ? `https://maps.apple.com/?q=${encodeURIComponent(lat + ',' + lng)}`
-        : `https://maps.google.com/?q=${encodeURIComponent(lat + ',' + lng)}`;
-
-    // Cambia el número por el real: 593XXXXXXXXX
-    const whatsappNumber = "593XXXXXXXXX";
-    const url = `https://wa.me/${whatsappNumber}?text=${msg}%0AUbicación: ${encodeURIComponent(mapsShare)}`;
+    const url = `https://wa.me/593XXXXXXXXX?text=${msg}%0AUbicación: https://maps.google.com/?q=${lat},${lng}`;
 
     const template = document
         .querySelector("#deliveryTemplate .popup-card")
@@ -241,7 +157,6 @@ function mostrarPopupDelivery(lat, lng) {
     template.querySelector(".popup-btn").textContent = "📲 Pedir por WhatsApp";
 
     template.querySelector(".popup-btn").addEventListener("click", () => {
-        // Abrir WhatsApp / web en nueva ventana/pestaña
         window.open(url, "_blank");
     });
 
@@ -320,8 +235,7 @@ function activarDelivery() {
             () => {
                 alert("No se pudo obtener la ubicación. Activa el GPS.");
                 resolve();
-            },
-            { enableHighAccuracy: true, timeout: 8000 }
+            }
         );
     });
 }
