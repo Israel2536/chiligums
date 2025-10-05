@@ -499,7 +499,6 @@ if (pickupBtn && deliveryBtn) {
         activarDelivery().finally(() => hideLoader());
     });
 
-    // Mostrar banner solo una vez después de "Entendido"
     document.addEventListener("DOMContentLoaded", () => {
         const banner = document.getElementById("installBanner");
         const understoodBtn = document.querySelector("#popupEntendido, .btn-entendido, #understoodBtn");
