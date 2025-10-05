@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <!-- Favicon clásico / fallback -->
+    <link rel="icon" href="/chiligums/assets/favicon-DJ8-nudK.ico" />
+
+    <!-- PNGs para navegadores modernos -->
+    <link rel="icon" type="image/png" sizes="32x32" href="/chiligums/assets/favicon-32x32-N8gfI-2d.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/chiligums/assets/favicon-16x16-DXg3_NcB.png" />
+
+    <!-- Apple touch (iOS home screen) -->
+    <link rel="apple-touch-icon" sizes="180x180" href="/chiligums/assets/apple-touch-icon-Bf_D84BR.png" />
+
+    <!-- Android / PWA icons (manifest debería referenciarlas también) -->
+    <link rel="manifest" href="/chiligums/assets/site-BwHFeIBa.webmanifest" />
+    <link rel="shortcut icon" href="/chiligums/assets/favicon-32x32-N8gfI-2d.png" />
+
+    <!-- Optional: theme color for mobile -->
+    <meta name="theme-color" content="#d97706" />
+
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ChiliGums</title>
+    <link href="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css" rel="stylesheet">
+
+    <!-- Fuente Fredoka -->
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap" rel="stylesheet">
+
+    <!-- Nuestros estilos -->
+    <link
+            rel="stylesheet"
+            href="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-directions/v4.1.1/mapbox-gl-directions.css"
+    />
+  <script type="module" crossorigin src="/chiligums/assets/index-uvypw98T.js"></script>
+  <link rel="stylesheet" crossorigin href="/chiligums/assets/index-BBsotdv9.css">
+</head>
+
+<!-- Hero -->
+<header class="hero">
+    <img src="/chiligums/logo.png" alt="ChiliGums Logo" class="hero-logo" />
+    <p class="slogan">¡Lo dulce y picante que te conquistará!</p>
+</header>
+<body class="body">
+<!-- Simple Splash (poner al inicio del body) -->
+<div id="simpleSplash" role="img" aria-label="Chili Gumms loading">
+    <img src="/chiligums/assets/logo-T93mS9As.png" alt="Melody — Chili Gumms logo" id="simpleSplashLogo" />
+</div>
+
+<!-- Contenido -->
+<main class="map-section">
+    <div class="map-container">
+        <section class="toggle-section">
+            <div class="toggle">
+                <button id="pickupBtn" class="toggle-btn active">Puntos de venta</button>
+                <button id="deliveryBtn" class="toggle-btn">Delivery</button>
+            </div>
+        </section>
+        <div id="map"></div>
+        <div id="mapLoader">
+            <div class="spinner"></div>
+        </div>
+
+    </div>
+</main>
+
+<!-- Template para PICKUP -->
+<section id="pickupTemplate" style="display:none;">
+    <div class="popup-card" data-lat="" data-lng="">
+        <button class="popup-close">✖</button>
+        <h4 class="popup-title">NOMBRE</h4>
+        <p class="popup-desc">DIRECCIÓN</p>
+        <button class="popup-btn">🚗 Ir con Google Maps</button>
+    </div>
+</section>
+
+<!-- Template para DELIVERY -->
+<section id="deliveryTemplate" style="display:none;">
+    <div class="popup-card" data-lat="" data-lng="">
+        <button class="popup-close">✖</button>
+        <h4 class="popup-title">Tu ubicación</h4>
+        <p class="popup-desc">Haz clic en el botón para pedir por WhatsApp</p>
+        <button class="popup-btn">📲 Pedir por WhatsApp</button>
+    </div>
+</section>
+
+
+<!-- Mapbox JS -->
+<script src="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js"></script>
+
+<!-- Tu JS -->
+<!-- insertar al final del body -->
+<footer id="site-footer" class="powered">
+    <div class="powered__inner">
+        <a  class="powered__logo" aria-label="Ir a Melody">
+            <img src="/chiligums/assets/logo_melody-D9JCYu-I.png" alt="Melody" />
+        </a>
+        <div class="powered__text">
+            <span class="powered__by">Powered by</span>
+            <span class="powered__name">Melody</span>
+            <small class="powered__copyright">© 2025 Melody · Todos los derechos reservados</small>
+        </div>
+    </div>
+</footer>
+<!-- Banner de instalación tipo PWA -->
+<div id="installBanner" class="install-banner hidden">
+    <div class="install-content">
+        <img src="/chiligums/logo.png" alt="ChiliGums logo" class="install-logo" />
+        <div class="install-text">
+            <h4>Instala la app ChiliGums</h4>
+            <p>Accede más rápido desde tu pantalla de inicio</p>
+        </div>
+        <a href="public/descargas/chiligums.apk" class="install-btn" download>Instalar</a>
+    </div>
+    <div class="install-loader"></div>
+</div>
+
+</body>
+</html>
+<script src="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-directions/v4.1.1/mapbox-gl-directions.js"></script>
