@@ -528,3 +528,9 @@ html, body {
 .hidden {
     display: none;
 }
+.install-banner.show {
+    opacity: 1;
+    pointer-events: all;
+    transform: translate(-50%, 10px);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}

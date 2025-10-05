@@ -502,28 +502,28 @@ if (pickupBtn && deliveryBtn) {
     // Mostrar banner solo una vez después de "Entendido"
     document.addEventListener("DOMContentLoaded", () => {
         const banner = document.getElementById("installBanner");
-
-        // Escucha el botón "Entendido" del popup del mapa
         const understoodBtn = document.querySelector("#popupEntendido, .btn-entendido, #understoodBtn");
 
-        if (understoodBtn) {
+        // ✅ Detectar si el usuario está en Android
+        const isAndroid = /android/i.test(navigator.userAgent);
+        if (understoodBtn && isAndroid) {
             understoodBtn.addEventListener("click", () => {
-                // Solo si no lo ha visto antes
+                // Mostrar solo si no lo ha visto antes
                 if (!localStorage.getItem("bannerShown")) {
                     setTimeout(() => {
                         banner.classList.remove("hidden");
                         banner.classList.add("show");
-
-                        // Ocultar después de 2s (igual que animación)
+                        // Ocultar después de 2 segundos
                         setTimeout(() => {
                             banner.classList.remove("show");
                             localStorage.setItem("bannerShown", "true");
                         }, 2000);
-                    }, 500); // medio segundo después de "Entendido"
+                    }, 500);
                 }
             });
         }
     });
+
 
 
 }
