@@ -44,6 +44,23 @@ import { getFirestore, collection, getDocs } from "firebase/firestore";
         hideTimer = setTimeout(hide, Math.min(600, VISIBLE_MS));
     }
 })();
+document.addEventListener("click", (e) => {
+    // Solo si es Android y el clic fue en el botón "Entendido"
+    if (/android/i.test(navigator.userAgent) && e.target.classList.contains("intro-ok")) {
+        if (!localStorage.getItem("bannerShown")) {
+            const banner = document.getElementById("installBanner");
+            setTimeout(() => {
+                banner.classList.remove("hidden");
+                banner.classList.add("show");
+                // Ocultar después de 2 segundos
+                setTimeout(() => {
+                    banner.classList.remove("show");
+                    localStorage.setItem("bannerShown", "true");
+                }, 4000);
+            }, 500);
+        }
+    }
+});
 
 // KEY para localStorage
 const INTRO_STORAGE_KEY = "chiligums_seen_intro_v1";
@@ -498,31 +515,5 @@ if (pickupBtn && deliveryBtn) {
         showLoader();
         activarDelivery().finally(() => hideLoader());
     });
-
-    document.addEventListener("DOMContentLoaded", () => {
-        const banner = document.getElementById("installBanner");
-        const understoodBtn = document.querySelector("#popupEntendido, .btn-entendido, #understoodBtn");
-
-        // ✅ Detectar si el usuario está en Android
-        const isAndroid = /android/i.test(navigator.userAgent);
-        if (understoodBtn && isAndroid) {
-            understoodBtn.addEventListener("click", () => {
-                // Mostrar solo si no lo ha visto antes
-                if (!localStorage.getItem("bannerShown")) {
-                    setTimeout(() => {
-                        banner.classList.remove("hidden");
-                        banner.classList.add("show");
-                        // Ocultar después de 2 segundos
-                        setTimeout(() => {
-                            banner.classList.remove("show");
-                            localStorage.setItem("bannerShown", "true");
-                        }, 2000);
-                    }, 500);
-                }
-            });
-        }
-    });
-
-
 
 }
