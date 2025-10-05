@@ -291,7 +291,7 @@ function mostrarPopupDelivery(lat, lng) {
     const msg = encodeURIComponent(
         "Hola, quiero hacer un pedido desde esta ubicación:"
     );
-    const url = `https://wa.me/593XXXXXXXXX?text=${msg}%0AUbicación: https://maps.google.com/?q=${lat},${lng}`;
+    const url = `https://wa.me/593964031010?text=${msg}%0AUbicación: https://maps.google.com/?q=${lat},${lng}`;
 
     const template = document
         .querySelector("#deliveryTemplate .popup-card")
