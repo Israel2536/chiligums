@@ -44,15 +44,29 @@ import { getFirestore, collection, getDocs } from "firebase/firestore";
         hideTimer = setTimeout(hide, Math.min(600, VISIBLE_MS));
     }
 })();
+// Escuchar clics globales (delegación)
 document.addEventListener("click", (e) => {
-    // Solo si es Android y el clic fue en el botón "Entendido"
-    if (/android/i.test(navigator.userAgent) && e.target.classList.contains("intro-ok")) {
+    const ua = navigator.userAgent || navigator.vendor || window.opera;
+
+    // Detectar si está en Android
+    const isAndroid = /android/i.test(ua);
+
+    // Detectar si es WebView (para NO mostrar el banner dentro de la app)
+    const isInWebView =
+        /\bwv\b/.test(ua) ||                      // Android WebView
+        (isAndroid && !/chrome|samsungbrowser/i.test(ua)); // por si el UA es reducido
+
+    // ✅ Solo si es Android, NO está en WebView, y el clic fue en "Entendido"
+    if (isAndroid && !isInWebView && e.target.classList.contains("intro-ok")) {
         if (!localStorage.getItem("bannerShown")) {
             const banner = document.getElementById("installBanner");
+            if (!banner) return;
+
             setTimeout(() => {
                 banner.classList.remove("hidden");
                 banner.classList.add("show");
-                // Ocultar después de 2 segundos
+
+                // Ocultar después de 4 segundos (tu cambio)
                 setTimeout(() => {
                     banner.classList.remove("show");
                     localStorage.setItem("bannerShown", "true");
@@ -61,6 +75,7 @@ document.addEventListener("click", (e) => {
         }
     }
 });
+
 
 // KEY para localStorage
 const INTRO_STORAGE_KEY = "chiligums_seen_intro_v1";
