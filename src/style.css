@@ -443,3 +443,88 @@ html, body {
         transition: none !important;
     }
 }
+/* ==== Banner superior tipo PWA ==== */
+.install-banner {
+    position: fixed;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 95%;
+    max-width: 500px;
+    background: #fff;
+    color: #222;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    padding: 12px 16px;
+    display: flex;
+    flex-direction: column;
+    z-index: 1000;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+    font-family: 'Fredoka', sans-serif;
+}
+
+.install-banner.show {
+    opacity: 1;
+    pointer-events: all;
+}
+
+.install-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.install-logo {
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+}
+
+.install-text h4 {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 700;
+    color: #e50914;
+}
+
+.install-text p {
+    margin: 0;
+    font-size: 0.8rem;
+    color: #555;
+}
+
+.install-btn {
+    background: #e50914;
+    color: #fff;
+    font-weight: 600;
+    text-decoration: none;
+    padding: 6px 14px;
+    border-radius: 8px;
+    transition: background 0.3s;
+}
+
+.install-btn:hover {
+    background: #ff5e00;
+}
+
+/* ==== Línea de carga inferior ==== */
+.install-loader {
+    margin-top: 8px;
+    height: 3px;
+    width: 0%;
+    background: linear-gradient(90deg, #e50914, #ff5e00);
+    border-radius: 2px;
+    animation: loaderAnim 2s linear forwards;
+}
+
+@keyframes loaderAnim {
+    from { width: 0%; }
+    to { width: 100%; }
+}
+
+.hidden {
+    display: none;
+}

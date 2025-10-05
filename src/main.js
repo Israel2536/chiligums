@@ -21,33 +21,26 @@ import { getFirestore, collection, getDocs } from "firebase/firestore";
 
     // Ocultar con suavizado y remover del DOM después del fade
     function hide() {
-        // aplicar clase que inicia la transición
-        // usamos requestAnimationFrame para asegurarnos que el browser reconozca el cambio
         requestAnimationFrame(() => {
             SPLASH.classList.add('hidden');
             SPLASH.style.pointerEvents = 'none';
         });
-        // remover del DOM después del tiempo de fade
         setTimeout(() => {
             if (SPLASH && SPLASH.parentNode) SPLASH.parentNode.removeChild(SPLASH);
         }, FADE_MS + 40);
     }
 
-    // iniciar: mostrar y programar hide
     show();
     hideTimer = setTimeout(hide, VISIBLE_MS);
 
-    // expose helper to skip during dev
     window.__skipSplash = function(){
         clearTimeout(hideTimer);
         hide();
     };
 
-    // soporte reduced motion: si prefieren reducir movimiento, acortar todo
     const mq = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)');
     if (mq && mq.matches) {
         clearTimeout(hideTimer);
-        // hide rápido
         hideTimer = setTimeout(hide, Math.min(600, VISIBLE_MS));
     }
 })();
@@ -55,26 +48,15 @@ import { getFirestore, collection, getDocs } from "firebase/firestore";
 // KEY para localStorage
 const INTRO_STORAGE_KEY = "chiligums_seen_intro_v1";
 
-/**
- * Crea y muestra el modal introductorio (si no está desactivado).
- * Opciones:
- *  - force: true -> ignora localStorage y muestra
- *  - message: texto adicional (opcional)
- */
 function showIntroModal({ force = false, message = null } = {}) {
     try {
         if (!force && localStorage.getItem(INTRO_STORAGE_KEY) === "true") return;
     } catch (e) {
-        // si localStorage falla seguimos mostrando
         console.warn("localStorage not available:", e);
     }
 
-    // Si ya existe, no lo recreamos
-    if (document.querySelector(".intro-modal")) {
-        return;
-    }
+    if (document.querySelector(".intro-modal")) return;
 
-    // Crear DOM del modal
     const backdrop = document.createElement("div");
     backdrop.className = "intro-modal";
     backdrop.setAttribute("role", "dialog");
@@ -91,7 +73,6 @@ function showIntroModal({ force = false, message = null } = {}) {
 
     document.body.appendChild(backdrop);
 
-    // Enfocar en el botón OK
     const okBtn = backdrop.querySelector(".intro-ok");
     const closeBtn = backdrop.querySelector(".intro-close");
     const skipCheckbox = backdrop.querySelector(".intro-skip-checkbox");
@@ -108,30 +89,17 @@ function showIntroModal({ force = false, message = null } = {}) {
         if (e.key === "Escape") closeModal();
     }
 
-    // Eventos
     okBtn.addEventListener("click", () => {
-        // si marcó "No mostrar de nuevo" guardamos
         if (skipCheckbox && skipCheckbox.checked) {
-            try {
-                localStorage.setItem(INTRO_STORAGE_KEY, "true");
-            } catch (e) { console.warn("localStorage fail", e); }
+            try { localStorage.setItem(INTRO_STORAGE_KEY, "true"); } catch (e) { console.warn(e); }
         }
         closeModal();
     });
-
-    closeBtn.addEventListener("click", () => {
-        closeModal();
-    });
-
-    // Cerrar si hace click fuera de la tarjeta
-    backdrop.addEventListener("click", (ev) => {
-        if (ev.target === backdrop) closeModal();
-    });
-
+    closeBtn.addEventListener("click", closeModal);
+    backdrop.addEventListener("click", (ev) => { if (ev.target === backdrop) closeModal(); });
     document.addEventListener("keydown", onKeyDown);
 }
 
-// escape simple para insertar en innerHTML
 function escapeHtml(str) {
     return String(str || '')
         .replace(/&/g, '&amp;')
@@ -141,11 +109,7 @@ function escapeHtml(str) {
         .replace(/'/g, '&#39;');
 }
 
-// Llamada de utilidad: muestra la intro si no se ocultó
-function showIntroIfNeeded() {
-    showIntroModal({ force: false });
-}
-
+function showIntroIfNeeded() { showIntroModal({ force: false }); }
 
 // ================= Firebase =================
 const firebaseConfig = {
@@ -176,12 +140,8 @@ const map = new mapboxgl.Map({
 map.addControl(new mapboxgl.NavigationControl());
 
 // ===== Loader helpers =====
-function showLoader() {
-    document.getElementById("mapLoader").style.display = "flex";
-}
-function hideLoader() {
-    document.getElementById("mapLoader").style.display = "none";
-}
+function showLoader() { const el = document.getElementById("mapLoader"); if (el) el.style.display = "flex"; }
+function hideLoader() { const el = document.getElementById("mapLoader"); if (el) el.style.display = "none"; }
 
 // ===== Botón Reset View (🎯) =====
 class ResetViewControl {
@@ -192,9 +152,7 @@ class ResetViewControl {
         this._btn.type = "button";
         this._btn.title = "Centrar en Cayambe";
         this._btn.textContent = "🎯";
-        this._btn.onclick = () => {
-            map.flyTo({ center: CAYAMBE, zoom: 14, speed: 1.2 });
-        };
+        this._btn.onclick = () => { map.flyTo({ center: CAYAMBE, zoom: 14, speed: 1.2 }); };
         const container = document.createElement("div");
         container.className = "mapboxgl-ctrl-group mapboxgl-ctrl";
         container.appendChild(this._btn);
@@ -210,8 +168,9 @@ map.addControl(new ResetViewControl(), "top-right");
 // ===== Contenedor único para popup custom =====
 const customPopup = document.createElement("div");
 customPopup.id = "customPopup";
+// IMPORTANT: cambio mínimo: evitar translate Y tan grande para posicionar manualmente el top
 customPopup.style.position = "absolute";
-customPopup.style.transform = "translate(-50%, -140%)";
+customPopup.style.transform = "translate(-50%, 0)"; // <- antes era -140% en Y, ahora manejamos top manualmente
 customPopup.style.display = "none";
 customPopup.style.zIndex = "999";
 map.getContainer().appendChild(customPopup);
@@ -219,6 +178,7 @@ map.getContainer().appendChild(customPopup);
 // ===== Variables globales =====
 let firestoreMarkers = [];
 let deliveryMarker = null;
+let currentPopupLocation = null; // <-- guarda [lng, lat] del popup mostrado (pickup)
 
 // ================== PICKUP ==================
 async function cargarPuntos() {
@@ -256,17 +216,74 @@ async function cargarPuntos() {
             if (closeBtn) {
                 closeBtn.addEventListener("click", () => {
                     customPopup.style.display = "none";
+                    currentPopupLocation = null;
                 });
             }
 
-            customPopup.innerHTML = "";
-            customPopup.appendChild(template);
+            // --- MEDIR popup ---
+            const meas = template.cloneNode(true);
+            meas.style.position = "absolute";
+            meas.style.visibility = "hidden";
+            meas.style.display = "block";
+            document.body.appendChild(meas);
+            const popupHeight = meas.offsetHeight || 200;
+            const popupWidth = meas.offsetWidth || template.offsetWidth || 240;
+            meas.remove();
 
+            // --- Queremos centrar el MARKER en la pantalla (vertical center) ---
+            const mapContainer = map.getContainer();
+            const containerWidth = mapContainer.clientWidth || map.getCanvas().clientWidth;
+            const containerHeight = mapContainer.clientHeight || map.getCanvas().clientHeight;
+
+            // proyectar la posición actual del marker (antes de mover)
             const pixel = map.project(destino);
-            customPopup.style.left = pixel.x + "px";
-            customPopup.style.top = pixel.y + "px";
-            customPopup.style.display = "block";
 
+            // Deseamos que el marcador quede exactamente en el centro vertical del contenedor
+            const desiredMarkerY = containerHeight * 0.5; // <- 50% (marker centrado)
+            const deltaY = desiredMarkerY - pixel.y; // px que necesitamos mover el marker hacia abajo
+
+            // Calcular nuevo centro del mapa en píxeles y convertir a coords
+            const centerPixel = map.project(map.getCenter());
+            const newCenterPixel = { x: centerPixel.x, y: centerPixel.y - deltaY };
+            const newCenter = map.unproject([newCenterPixel.x, newCenterPixel.y]);
+
+            // Guardamos referencia para reposicionar si el mapa se mueve
+            currentPopupLocation = destino;
+
+            // Mover la cámara suavemente a la nueva posición
+            map.easeTo({
+                center: newCenter,
+                duration: 500,
+                easing: (t) => t,
+            });
+
+            // Mostrar popup cuando termine el movimiento
+            map.once("moveend", () => {
+                customPopup.innerHTML = "";
+                customPopup.appendChild(template);
+
+                const finalPixel = map.project(destino);
+
+                // Colocar popup **encima** del pin: calcular top como pixel.y - popupHeight - margen
+                const margin = 10;
+                let top = finalPixel.y - popupHeight - margin;
+                // Si top queda por encima del mapa, lo clavamos al margen superior
+                if (top < 8) top = 8;
+
+                // centerX será el pixel.x (centro horizontal respecto al pin)
+                let centerX = finalPixel.x;
+                // clamp horizontal para que no se salga por los lados
+                const minCenterX = popupWidth / 2 + 8;
+                const maxCenterX = containerWidth - popupWidth / 2 - 8;
+                if (centerX < minCenterX) centerX = minCenterX;
+                if (centerX > maxCenterX) centerX = maxCenterX;
+
+                customPopup.style.left = centerX + "px";
+                customPopup.style.top = top + "px";
+                customPopup.style.display = "block";
+            });
+
+            // intentar mejorar URL con origen si tenemos geoloc
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition((pos) => {
                     url += `&origin=${pos.coords.latitude},${pos.coords.longitude}`;
@@ -284,6 +301,7 @@ function limpiarPuntos() {
         deliveryMarker = null;
     }
     customPopup.style.display = "none";
+    currentPopupLocation = null;
 }
 
 // ================== DELIVERY ==================
@@ -310,6 +328,7 @@ function mostrarPopupDelivery(lat, lng) {
     if (closeBtn) {
         closeBtn.addEventListener("click", () => {
             customPopup.style.display = "none";
+            currentPopupLocation = null;
         });
     }
 
@@ -317,8 +336,26 @@ function mostrarPopupDelivery(lat, lng) {
     customPopup.appendChild(template);
 
     const pixel = map.project([lng, lat]);
-    customPopup.style.left = pixel.x + "px";
-    customPopup.style.top = pixel.y + "px";
+
+    // posicionar popup sobre pin (mismo cálculo: popup encima del pin)
+    const popupHeight = template.offsetHeight || 200;
+    const popupWidth = template.offsetWidth || 240;
+    const margin = 10;
+    const mapContainer = map.getContainer();
+    const containerWidth = mapContainer.clientWidth || map.getCanvas().clientWidth;
+    const containerHeight = mapContainer.clientHeight || map.getCanvas().clientHeight;
+
+    let top = pixel.y - popupHeight - margin;
+    if (top < 8) top = 8;
+
+    let centerX = pixel.x;
+    const minCenterX = popupWidth / 2 + 8;
+    const maxCenterX = containerWidth - popupWidth / 2 - 8;
+    if (centerX < minCenterX) centerX = minCenterX;
+    if (centerX > maxCenterX) centerX = maxCenterX;
+
+    customPopup.style.left = centerX + "px";
+    customPopup.style.top = top + "px";
     customPopup.style.display = "block";
 }
 
@@ -346,7 +383,6 @@ function activarDelivery() {
 
                 mostrarPopupDelivery(lat, lng);
 
-                // Tooltip estilizado en cada entrada a delivery
                 const tooltip = document.createElement("div");
                 tooltip.innerText = "🚩 Arrástrame";
                 tooltip.style.position = "absolute";
@@ -363,7 +399,6 @@ function activarDelivery() {
                 el.appendChild(tooltip);
                 setTimeout(() => tooltip.remove(), 5000);
 
-                // Actualizar popup inmediatamente al mover pin
                 deliveryMarker.on("dragend", () => {
                     const pos = deliveryMarker.getLngLat();
                     mostrarPopupDelivery(pos.lat, pos.lng);
@@ -393,13 +428,47 @@ map.on("load", () => {
 });
 
 map.on("move", () => {
+    // si hay popup visible y está vinculado a un punto lo reposicionamos (popup siempre encima del pin)
     if (customPopup.style.display === "block") {
         const card = customPopup.querySelector(".popup-card");
-        if (card && deliveryMarker) {
+        if (!card) return;
+
+        const popupHeight = card.offsetHeight || 200;
+        const popupWidth = card.offsetWidth || 240;
+        const mapContainer = map.getContainer();
+        const containerWidth = mapContainer.clientWidth || map.getCanvas().clientWidth;
+        const containerHeight = mapContainer.clientHeight || map.getCanvas().clientHeight;
+
+        if (deliveryMarker) {
             const pos = deliveryMarker.getLngLat();
             const pixel = map.project([pos.lng, pos.lat]);
-            customPopup.style.left = pixel.x + "px";
-            customPopup.style.top = pixel.y + "px";
+
+            const margin = 10;
+            let top = pixel.y - popupHeight - margin;
+            if (top < 8) top = 8;
+
+            let centerX = pixel.x;
+            const minCenterX = popupWidth / 2 + 8;
+            const maxCenterX = containerWidth - popupWidth / 2 - 8;
+            if (centerX < minCenterX) centerX = minCenterX;
+            if (centerX > maxCenterX) centerX = maxCenterX;
+
+            customPopup.style.left = centerX + "px";
+            customPopup.style.top = top + "px";
+        } else if (currentPopupLocation) {
+            const pixel = map.project(currentPopupLocation);
+            const margin = 10;
+            let top = pixel.y - popupHeight - margin;
+            if (top < 8) top = 8;
+
+            let centerX = pixel.x;
+            const minCenterX = popupWidth / 2 + 8;
+            const maxCenterX = containerWidth - popupWidth / 2 - 8;
+            if (centerX < minCenterX) centerX = minCenterX;
+            if (centerX > maxCenterX) centerX = maxCenterX;
+
+            customPopup.style.left = centerX + "px";
+            customPopup.style.top = top + "px";
         }
     }
 });
@@ -429,5 +498,32 @@ if (pickupBtn && deliveryBtn) {
         showLoader();
         activarDelivery().finally(() => hideLoader());
     });
+
+    // Mostrar banner solo una vez después de "Entendido"
+    document.addEventListener("DOMContentLoaded", () => {
+        const banner = document.getElementById("installBanner");
+
+        // Escucha el botón "Entendido" del popup del mapa
+        const understoodBtn = document.querySelector("#popupEntendido, .btn-entendido, #understoodBtn");
+
+        if (understoodBtn) {
+            understoodBtn.addEventListener("click", () => {
+                // Solo si no lo ha visto antes
+                if (!localStorage.getItem("bannerShown")) {
+                    setTimeout(() => {
+                        banner.classList.remove("hidden");
+                        banner.classList.add("show");
+
+                        // Ocultar después de 2s (igual que animación)
+                        setTimeout(() => {
+                            banner.classList.remove("show");
+                            localStorage.setItem("bannerShown", "true");
+                        }, 2000);
+                    }, 500); // medio segundo después de "Entendido"
+                }
+            });
+        }
+    });
+
 
 }
